@@ -1,7 +1,7 @@
 Logging tool for wiredto154 simulations
 =======================================
 
-This document describes a logger tool works alongside *[wiredto154]* simulation.
+This document describes a logger tool works alongside *[wiredto154][]* simulation.
 
 This tool was written to parse logging message of one of our research item
 (the Adaptive Keying Management protocol) and probably needs to be adapted to
@@ -162,5 +162,38 @@ want the output to be stored in a file named "log.txt":
     ./logger.py -a 224.2.2.2 -p 5000 -f log.txt
 
 The logger.py will exit gracefully upon receiving the interrupt signal (Ctrl+C).
+
+Calling the logging API from Contiki
+------------------------------------
+
+We are currently working on an extension of the Contiki native target to use
+UDP communication and connect to [wiredto154][]. This code also contains API to
+log messages using the logging facilities described in this page.
+
+In order to use logging messages, you must include the logging header:
+
+    #include <sys/logger.h>
+
+You can then call any of the following function (depending on the situation):
+
+* *int log_msg_one_node(uint8_t subtype, char * msg, size_t msg_len)*
+    * log message involving only this node (the node calling this function)
+    * *subtype* describes the subtype of message, it could be any of the sub-types
+      defined above, or a completely different one (in this case you might want to
+      extend logger.py to print out this message name more nicely)
+    * *msg* is a string and *msg_len* is its size
+
+* *int log_msg_two_nodes(uint8_t subtype, uint16_t other_node_id, char * msg, size_t msg_len)*
+    * log message involving two nodes (the node calling this function and other_node_id)
+    * *subtype* describes the subtype of message. No reserved values defined so far, feel free to define them in logger.py.
+    * *msg* is a string and *msg_len* is its size
+
+* *int log_msg_many_nodes(uint8_t subtype, uint16_t * other_nodes_id, char * msg, size_t msg_len)*
+    * log message involving multiple nodes (the node calling this function and other_nodes_id)
+    * *subtype* describes the subtype of message. No reserved values defined so far, feel free to define them in logger.py.
+    * *other_nodes_id* contains the list of nodes being involved (this array must end with 0)
+    * *msg* is a string and *msg_len* is its size
+
+
 
 [wiredto154]: https://github.com/tcheneau/wiredto154
