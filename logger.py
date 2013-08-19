@@ -20,7 +20,6 @@
 # this software.
 
 from signal import signal, SIGINT
-from collections import defaultdict
 from sys import stdout
 import socket, time, struct, itertools
 
@@ -37,16 +36,23 @@ TYPE_MANYNODES = 3
 def constant_factory(value):
     return itertools.repeat(value).next
 
-onenode_subtypes = defaultdict(constant_factory("unknown"))
+class mydefaultdict(dict):
+    def __missing__(self, key):
+        value = self[key] = "unknown-%d" % key
+        return value
+
+# define additional types here
 onenode_subtypes_l = [(1, "node join"), (2, "node exit"), (3, "node out of sync")]
+twonode_subtypes_l = []
+manynode_subtypes_l = []
+
+onenode_subtypes = mydefaultdict()
 for subtype, label in onenode_subtypes_l:
       onenode_subtypes[subtype] = label
-twonode_subtypes = defaultdict(constant_factory("unknown"))
-twonode_subtypes_l = []
+twonode_subtypes = mydefaultdict()
 for subtype, label in twonode_subtypes_l:
     twonode_subtypes[subtype] = label
-manynode_subtypes = defaultdict(constant_factory("unknown"))
-manynode_subtypes_l = []
+manynode_subtypes = mydefaultdict()
 for subtype, label in manynode_subtypes_l:
     manynode_subtypes[subtype] = label
 
@@ -70,6 +76,8 @@ class prettyfile(object):
         return self.fileobj.name
     def write(self, data):
         self.fileobj.write(data)
+    def flush(self):
+        self.fileobj.flush()
 
 def multicast_listener(address, port):
     """start a multicast listener on the specified address and port
