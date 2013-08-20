@@ -19,9 +19,12 @@
 # not limited to the correctness, accuracy, reliability or usefulness of
 # this software.
 
+# Tony Cheneau <tony.cheneau@nist.gov>
+
 from signal import signal, SIGINT
 from sys import stdout
-import socket, time, struct, itertools
+from threading import Timer
+import socket, time, struct
 
 # global variables
 logger = None
@@ -29,12 +32,10 @@ logger = None
 # protocol constants
 
 LOG_HEADER = 128 # events destined to the logger
+SIM_END = 3 # server asks for the simulation to end, and thus the logger to shut down
 TYPE_ONENODE = 1
 TYPE_TWONODES = 2
 TYPE_MANYNODES = 3
-
-def constant_factory(value):
-    return itertools.repeat(value).next
 
 class mydefaultdict(dict):
     def __missing__(self, key):
@@ -148,6 +149,11 @@ class TextLogger(object):
 
 def dispatcher(data):
     # parse the message
+    if len(data) == 1 and ord(data[0]) == SIM_END:
+        print "received simulation end message, shutting down simulation in five seconds"
+        Timer(5.0, simulation_end).start()
+        return
+
     if len(data) <= 4 or ord(data[0]) != LOG_HEADER :
         return
 
@@ -205,6 +211,11 @@ def parse_manynodes(data):
 def sig_handler(signal, frame):
     pass
 
+def simulation_end():
+    print "logger is now exiting"
+    import os
+    os._exit(0)
+
 if __name__ == "__main__":
     import argparse
     stdout = prettyfile(stdout)
@@ -227,9 +238,9 @@ if __name__ == "__main__":
 
     sock = multicast_listener(args.address, args.port)
 
-    processing = True
-
     print "starting logger loop (hit CTRL+C to exit)"
+
+    processing = True
 
     while processing:
         try:
