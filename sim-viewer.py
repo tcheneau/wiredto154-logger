@@ -33,6 +33,12 @@ import time, os
 # - add detailed information on the Node
 
 # pyglet related code
+
+# common colors obtained by subtracting existing ones
+GREEN = (50, 200, 50)
+BLUE = (200, 50, 50)
+RED = (50, 50, 200)
+
 import pyglet
 from pyglet.window import key, mouse
 
@@ -42,21 +48,13 @@ pyglet.resource.reindex()
 batch = pyglet.graphics.Batch()
 
 on_resize_event_obj = []
-# TODO: remove the following code
-fps_display = pyglet.clock.ClockDisplay()
 
 sensor_map = None
-
-def center_image(image):
-    image.anchor_x = image.width/2
-    image.anchor_y = image.height/2
 
 @sim_window.event
 def on_draw():
     sim_window.clear()
     batch.draw()
-    # TODO: remove the following code
-    fps_display.draw()
 
 @sim_window.event
 def on_key_press(symbol, modifiers):
@@ -116,6 +114,12 @@ class SensorNode(pyglet.sprite.Sprite):
         self.anchor_x = self.width/2
         self.anchor_y = self.height/2
 
+class NodeStatus(pyglet.sprite.Sprite):
+    def __init__(self, *args, **kwargs):
+        super(NodeStatus, self).__init__(img=pyglet.resource.image('status.png'),
+                                         *args[1:],
+                                         **kwargs)
+
 class Status():
     pass
 
@@ -137,7 +141,8 @@ class SensorMap(object):
         self.node_scale = 0.4
         self.nodes = []
         self.nodes_img = []
-        self.labels = []
+        self.nodes_status = []
+        self.nodes_label = []
         self.view_scale = 1
         self.view_trans_x = 0
         self.view_trans_y = 0
@@ -146,13 +151,16 @@ class SensorMap(object):
         self.nodes.append(node)
         sensor_node = SensorNode(batch=batch)
         sensor_node.scale=self.node_scale
+        sensor_status = NodeStatus(batch=batch)
+        sensor_status.scale=self.node_scale
         label = pyglet.text.Label(text=node.identifier,
                                   anchor_x='center',
                                   anchor_y='center',
                                   color=(0,0,0,255),
                                   batch=batch)
         self.nodes_img.append(sensor_node)
-        self.labels.append(label)
+        self.nodes_label.append(label)
+        self.nodes_status.append(sensor_status)
         self.compute_bounding_box()
 
     def compute_bounding_box(self):
@@ -169,6 +177,13 @@ class SensorMap(object):
                 y_max = node.y
 
         self.x_min, self.y_min, self.x_max, self.y_max = x_min, y_min, x_max, y_max
+
+    def node_change_color(self, identifier, color):
+        for (i, node) in enumerate(self.nodes):
+            if node.identifier == identifier:
+                print "found it"
+                self.nodes_img[i].color = color
+                break
 
     def reset_view(self):
         self.view_scale = 1
@@ -198,16 +213,18 @@ class SensorMap(object):
 
     def node_scale_up(self):
         self.node_scale += 0.05
-        for node in self.nodes_img:
-            node.scale = self.node_scale
+        for (i, node) in enumerate(self.nodes):
+            self.nodes_img[i].scale = self.node_scale
+            self.nodes_status[i].scale = self.node_scale
 
         self.refresh_view_with_params(self.width, self.height)
 
     def node_scale_down(self):
         if self.node_scale > 0.05:
             self.node_scale -= 0.05
-            for node in self.nodes_img:
-                node.scale = self.node_scale
+            for (i, node) in enumerate(self.nodes):
+                self.nodes_img[i].scale = self.node_scale
+                self.nodes_status[i].scale = self.node_scale
 
             self.refresh_view_with_params(self.width, self.height)
         else:
@@ -241,11 +258,17 @@ class SensorMap(object):
 
     def apply_tranform(self, scale, trans_x, trans_y):
         for (i, node) in enumerate(self.nodes):
+            # the nodes image
             self.nodes_img[i].x = self.view_scale * scale * (node.x + trans_x) + self.view_trans_x
             self.nodes_img[i].y = self.view_scale * scale * (node.y + trans_y) + self.view_trans_y
-            # the labels must be inside the node
-            self.labels[i].x = self.view_scale * scale * (node.x + trans_x) + self.view_trans_x + self.nodes_img[i].width // 2
-            self.labels[i].y = self.view_scale * scale * (node.y + trans_y) + self.view_trans_y + self.nodes_img[i].height // 2
+            # the nodes_label must be inside the node
+            self.nodes_label[i].x = self.view_scale * scale * (node.x + trans_x) + self.view_trans_x + self.nodes_img[i].width // 2
+            self.nodes_label[i].y = self.view_scale * scale * (node.y + trans_y) + self.view_trans_y + self.nodes_img[i].height // 2
+            # status is on the upper right corner of the image
+            self.nodes_status[i].x = self.view_scale * scale * (node.x + trans_x) + self.view_trans_x + \
+                                     self.nodes_img[i].width - self.nodes_status[i].width
+            self.nodes_status[i].y = self.view_scale * scale * (node.y + trans_y) + self.view_trans_y + \
+                                     self.nodes_img[i].height - self.nodes_status[i].height
 
     def update(self, dt):
         pass

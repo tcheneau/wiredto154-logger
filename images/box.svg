@@ -14,7 +14,10 @@
    id="svg4265"
    version="1.1"
    inkscape:version="0.47 r22583"
-   sodipodi:docname="New document 9">
+   sodipodi:docname="box.svg"
+   inkscape:export-filename="/users/tcheneau/sources/wiredto154-logger/images/box.png"
+   inkscape:export-xdpi="76.18"
+   inkscape:export-ydpi="76.18">
   <defs
      id="defs4267">
     <inkscape:perspective
@@ -38,7 +41,7 @@
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="698"
+     inkscape:window-width="1048"
      inkscape:window-height="1659"
      inkscape:window-x="0"
      inkscape:window-y="19"
@@ -66,6 +69,8 @@
        height="117.14286"
        x="228.57143"
        y="163.79076"
-       rx="0" />
+       rx="0"
+       inkscape:export-xdpi="76.178986"
+       inkscape:export-ydpi="76.178986" />
   </g>
 </svg>

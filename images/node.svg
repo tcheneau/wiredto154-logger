@@ -16,8 +16,8 @@
    inkscape:version="0.47 r22583"
    sodipodi:docname="node.svg"
    inkscape:export-filename="/users/tcheneau/sources/wiredto154-logger/images/node.png"
-   inkscape:export-xdpi="100"
-   inkscape:export-ydpi="100">
+   inkscape:export-xdpi="99.337776"
+   inkscape:export-ydpi="99.337776">
   <defs
      id="defs4">
     <inkscape:perspective
@@ -27,18 +27,6 @@
        inkscape:vp_z="744.09448 : 526.18109 : 1"
        inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
        id="perspective10" />
-    <filter
-       inkscape:collect="always"
-       id="filter3599"
-       x="-0.0432083"
-       width="1.0864166"
-       y="-0.11018116"
-       height="1.2203623">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="0.65584024"
-         id="feGaussianBlur3601" />
-    </filter>
     <filter
        inkscape:collect="always"
        id="filter3603">
@@ -55,6 +43,26 @@
          stdDeviation="2.1736803"
          id="feGaussianBlur4263" />
     </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter4846">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="2.7660786"
+         id="feGaussianBlur4848" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter4890"
+       x="-0.44969146"
+       width="1.8993829"
+       y="-0.91211009"
+       height="2.8242202">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="10.173464"
+         id="feGaussianBlur4892" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -64,8 +72,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="3.959798"
-     inkscape:cx="251.63557"
-     inkscape:cy="792.75737"
+     inkscape:cx="243.24358"
+     inkscape:cy="831.07573"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -101,8 +109,14 @@
        d="m 314.2857,231.6479 a 57.857143,57.857143 0 1 1 -115.71429,0 57.857143,57.857143 0 1 1 115.71429,0 z"
        transform="matrix(0.75617284,0,0,0.75617284,48.417104,42.374907)" />
     <path
-       style="fill:#d1d1d1;fill-opacity:1;fill-rule:evenodd;stroke:none;filter:url(#filter4261)"
-       d="M 242.3125 175.5625 L 237.4375 180.4375 L 231.46875 177 L 228.03125 182.96875 L 221.34375 181.1875 L 219.5625 187.875 L 212.65625 187.875 L 212.65625 194.78125 L 205.96875 196.5625 L 207.75 203.25 L 201.78125 206.6875 L 205.21875 212.65625 L 200.34375 217.53125 L 205.25 222.4375 L 201.78125 228.40625 L 207.75 231.84375 L 205.96875 238.53125 L 212.65625 240.3125 L 212.65625 247.21875 L 219.5625 247.21875 L 221.34375 253.875 L 228 252.09375 L 231.46875 258.0625 L 237.4375 254.625 L 242.3125 259.5 L 247.21875 254.59375 L 253.1875 258.0625 L 256.625 252.09375 L 263.3125 253.875 L 265.09375 247.21875 L 272 247.21875 L 272 240.3125 L 278.65625 238.53125 L 276.875 231.84375 L 282.84375 228.40625 L 279.375 222.4375 L 284.28125 217.53125 L 279.40625 212.65625 L 282.84375 206.6875 L 276.875 203.25 L 278.65625 196.5625 L 272 194.78125 L 272 187.875 L 265.09375 187.875 L 263.3125 181.1875 L 256.625 182.96875 L 253.1875 177 L 247.21875 180.46875 L 242.3125 175.5625 z "
-       id="rect4225" />
+       sodipodi:type="arc"
+       style="fill:#b7b7b7;fill-opacity:1;stroke:none;filter:url(#filter4890)"
+       id="path4850"
+       sodipodi:cx="257.46262"
+       sodipodi:cy="134.38606"
+       sodipodi:rx="27.14785"
+       sodipodi:ry="13.384521"
+       d="m 284.61047,134.38606 a 27.14785,13.384521 0 1 1 -54.2957,0 27.14785,13.384521 0 1 1 54.2957,0 z"
+       transform="matrix(0.67924527,0,0,0.60575696,68.945292,157.53158)" />
   </g>
 </svg>
