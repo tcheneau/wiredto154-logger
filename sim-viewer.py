@@ -166,7 +166,7 @@ class Node(object):
         self.y = y
 
     def __str__(self):
-        return "x: {0}\ny: {1}\n".format(self.identifier, float(self.x), float(self.y))
+        return "x: {0}\ny: {1}\n".format(self.x, self.y)
 
 class SensorMap(object):
     def __init__(self):
