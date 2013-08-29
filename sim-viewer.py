@@ -47,7 +47,11 @@ pyglet.resource.path = ['images']
 pyglet.resource.reindex()
 batch = pyglet.graphics.Batch()
 
+background = pyglet.graphics.OrderedGroup(0)
+foreground = pyglet.graphics.OrderedGroup(1)
+
 on_resize_event_obj = []
+on_mouse_motion_event_obj = []
 
 sensor_map = None
 
@@ -95,33 +99,65 @@ def on_resize(width, height):
     for obj in on_resize_event_obj:
         obj.on_resize(width, height)
 
-# XML related code
-def parse_xml(filename):
-    import xml.etree.ElementTree as ET
-    tree = ET.parse(os.path.expanduser(filename))
-    root = tree.getroot()
-    nodes = []
-    for node in root.find("nodes").getiterator("node"):
-        nodes.append((node.get("id"), float(node.get("x")), float(node.get("y"))))
+@sim_window.event
+def on_mouse_motion(x, y, dx, dy):
+    for obj in on_mouse_motion_event_obj:
+        obj.on_mouse_motion(x, y, dx, dy)
 
-    return nodes
+class Overlay(object):
+    def __init__(self, x, y, string):
+        self.box = pyglet.sprite.Sprite(img=pyglet.resource.image('box.png'), x=x, y=y,
+                                        group=foreground, batch=batch)
+        self.box.x = self.box.x - self.box.width//2
+        self.box.y = self.box.y - self.box.height//2
+        self.label = pyglet.text.Label(text=string,
+                                       x=x,
+                                       y=y,
+                                       multiline=True,
+                                       width= 0.9 * self.box.width,
+                                       anchor_x='center',
+                                       anchor_y='center',
+                                       color=(0,0,0,255),
+                                       group=foreground,
+                                       batch=batch)
+    def delete(self):
+        self.box.delete()
+        self.box = None
+        self.label.delete()
+        self.label = None
+
 
 class SensorNode(pyglet.sprite.Sprite):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, node, *args, **kwargs):
         super(SensorNode, self).__init__(img=pyglet.resource.image('node.png'),
                                          *args[1:],
                                          **kwargs)
+        self.node = node
         self.anchor_x = self.width/2
         self.anchor_y = self.height/2
+        self.overlay = None
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        if self.x < x < self.x + self.width and  \
+           self.y < y < self.y + self.height:
+            self.enable_overlay(str(self.node))
+        else:
+            self.disable_overlay()
+
+    def enable_overlay(self, string):
+        if not self.overlay:
+            self.overlay = Overlay(self.x + self.width//2, self.y + self.height//2, string)
+
+    def disable_overlay(self):
+        if self.overlay:
+            self.overlay.delete()
+            self.overlay = None
 
 class NodeStatus(pyglet.sprite.Sprite):
     def __init__(self, *args, **kwargs):
         super(NodeStatus, self).__init__(img=pyglet.resource.image('status.png'),
                                          *args[1:],
                                          **kwargs)
-
-class Status():
-    pass
 
 class Node(object):
     def __init__(self, identifier, x, y):
@@ -130,7 +166,7 @@ class Node(object):
         self.y = y
 
     def __str__(self):
-        return "\n".join(self.identifier, str(self.x), str(self.y))
+        return "x: {0}\ny: {1}\n".format(self.identifier, float(self.x), float(self.y))
 
 class SensorMap(object):
     def __init__(self):
@@ -149,16 +185,18 @@ class SensorMap(object):
 
     def add_node(self, node):
         self.nodes.append(node)
-        sensor_node = SensorNode(batch=batch)
+        sensor_node = SensorNode(node, group=background, batch=batch)
         sensor_node.scale=self.node_scale
-        sensor_status = NodeStatus(batch=batch)
+        sensor_status = NodeStatus(group=background, batch=batch)
         sensor_status.scale=self.node_scale
         label = pyglet.text.Label(text=node.identifier,
                                   anchor_x='center',
                                   anchor_y='center',
                                   color=(0,0,0,255),
+                                  group=background,
                                   batch=batch)
         self.nodes_img.append(sensor_node)
+        on_mouse_motion_event_obj.append(sensor_node)
         self.nodes_label.append(label)
         self.nodes_status.append(sensor_status)
         self.compute_bounding_box()
@@ -279,6 +317,19 @@ class SensorMap(object):
 
         self.refresh_view_with_params(width, height)
 
+def draw_arrow(point1, point2):
+    pass
+
+# XML related code
+def parse_xml(filename):
+    import xml.etree.ElementTree as ET
+    tree = ET.parse(os.path.expanduser(filename))
+    root = tree.getroot()
+    nodes = []
+    for node in root.find("nodes").getiterator("node"):
+        nodes.append((node.get("id"), float(node.get("x")), float(node.get("y"))))
+
+    return nodes
 
 if __name__ == "__main__":
     # parse arguments
