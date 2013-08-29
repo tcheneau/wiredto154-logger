@@ -123,6 +123,7 @@ class TextLogger(object):
     fd = None
     subtype_max_len = 0
     def __init__(self, filename):
+        self.start_time = None
         if isinstance(filename, str):
             self.fd = open(filename, mode='w')
         else: # if we pass a file descriptor directly
@@ -136,10 +137,12 @@ class TextLogger(object):
         return "".join(type_name.upper().split())
 
     def write(self, log):
+        if not self.start_time:
+            self.start_time = time.time()
         subtype_name = TextLogger.compact_subtypename(subtypes[log['type']][log['subtype']])
 
         msg = "{0:<18.6f} {1} [{2}] ({3})\n".format(
-            time.time(),
+            time.time() - self.start_time,
             subtype_name + " " * (1 + self.subtype_max_len - len(subtype_name)),
             ", ".join([str(node) for node in log['nodes']]),
             log['data'])
