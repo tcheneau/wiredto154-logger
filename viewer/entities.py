@@ -4,7 +4,7 @@ import pyglet
 batch = None
 
 # common colors
-BLACK = (255, 255, 255)
+BLACK = (0, 0, 0)
 BLUE  = (0,0,255)
 
 class Layers(object):
@@ -59,6 +59,10 @@ class Node(object):
 
     def __str__(self):
         return "x: {0}\ny: {1}\n".format(self.x, self.y)
+
+    def apply_tranform(self, scale, trans_x, trans_y, view_trans_x, view_trans_y):
+        return (scale * (self.x + trans_x) + view_trans_x,
+                scale * (self.y + trans_y) + view_trans_y)
 
 class SensorNode(pyglet.sprite.Sprite):
     def __init__(self, node_info, *args, **kwargs):
@@ -149,6 +153,7 @@ class SensorMap(object):
         self.x_max = 0
         self.y_max = 0
         self.node_scale = 0.4
+        self.lines = {}
         self.nodes = []
         self.view_scale = 1
         self.view_trans_x = 0
@@ -176,11 +181,34 @@ class SensorMap(object):
         self.x_min, self.y_min, self.x_max, self.y_max = x_min, y_min, x_max, y_max
 
     def node_change_color(self, identifier, color):
-        for (i, node) in enumerate(self.nodes):
-            if node.identifier == identifier:
-                print "found it"
-                self.nodes_img[i].color = color
+        for node in self.nodes:
+            if node.node_info.identifier == identifier:
+                node.nodes_img.color = color
                 break
+
+
+    def draw_line(self, A, B, color = BLACK):
+        """draw a line between node A and node B according to their simulation identifiers"""
+        nodeA = nodeB = None
+        for node in self.nodes:
+            if nodeA and nodeB:
+                break
+
+            if node.node_info.identifier == A:
+                nodeA = node
+                continue
+            elif node.node_info.identifier == B:
+                nodeB = node
+                continue
+
+        if nodeA and nodeB:
+            line_id = (nodeA, nodeB) if A < B else (nodeB, nodeA)
+            # the following call actually does not print much
+            line = Line()
+            line.add_batch(batch)
+            self.lines[line_id] = line
+        else:
+            raise "%s or %s is not part of the simulation" % (A, B)
 
     def reset_view(self):
         self.view_scale = 1
@@ -253,8 +281,16 @@ class SensorMap(object):
             self.apply_tranform(self.view_scale * scale, trans_x, trans_y)
 
     def apply_tranform(self, scale, trans_x, trans_y):
-        for (i, node) in enumerate(self.nodes):
+        for node in self.nodes:
             node.apply_tranform(scale, trans_x, trans_y, self.view_trans_x, self.view_trans_y)
+        for nodes, line in self.lines.iteritems():
+            node_A, node_B = nodes
+            new_A = node_A.node_info.apply_tranform(scale, trans_x, trans_y, self.view_trans_x, self.view_trans_y)
+            new_B = node_B.node_info.apply_tranform(scale, trans_x, trans_y, self.view_trans_x, self.view_trans_y)
+            line.delete()
+            line = Line(new_A, new_B)
+            self.lines[nodes] = line
+            line.add_batch(batch)
 
     def update(self, dt):
         pass
@@ -270,11 +306,12 @@ class SensorMap(object):
             node.on_mouse_motion(x, y, dx, dy)
 
 class Line(object):
-    def __init__(self, A=(0.,0.), B=(0.,0.), thickness=6, color=BLACK, batch=None):
+    def __init__(self, A=(0.,0.), B=(0.,0.), thickness=6, color=BLACK):
         self.A = A
         self.B = B
         self.thickness = thickness
         self.color = color
+        self.vertexlist = None
 
     def draw(self):
         x_A, y_A = self.A
@@ -286,13 +323,14 @@ class Line(object):
                              ('c3B', 2 * self.color))
 
     def delete(self):
-        self.vertexlist.delete()
+        if self.vertexlist:
+            self.vertexlist.delete()
 
     def add_batch(self, batch):
         x_A, y_A = self.A
         x_B, y_B = self.B
         pyglet.gl.glLineWidth(self.thickness)
-        self.vertexlist = batch.add(2,pyglet.gl.GL_LINES,None,
+        self.vertexlist = batch.add(2,pyglet.gl.GL_LINES,Layers.background,
                                    ('v2f', (x_A, y_A, x_B, y_B)),
                                    ('c3B', 2 * self.color))
         return self.vertexlist

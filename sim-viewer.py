@@ -32,7 +32,7 @@ import time, os
 # - authentication status
 # - add detailed information on the Node
 
-from viewer.entities import SensorMap, Node
+from viewer.entities import SensorMap, Node, Line
 import viewer.entities
 
 # pyglet related code
