@@ -31,45 +31,23 @@ class Overlay(object):
                                        color=(0,0,0,255),
                                        group=Layers.foreground,
                                        batch=batch)
+    @property
+    def width(self):
+        return self.box.width
+
+    @property
+    def height(self):
+        return self.box.height
+
     def delete(self):
         self.box.delete()
         self.box = None
         self.label.delete()
         self.label = None
 
-
-class SensorNode(pyglet.sprite.Sprite):
-    def __init__(self, node, *args, **kwargs):
-        super(SensorNode, self).__init__(img=pyglet.resource.image('node.png'),
-                                         *args[1:],
-                                         **kwargs)
-        self.node = node
-        self.anchor_x = self.width/2
-        self.anchor_y = self.height/2
-        self.overlay = None
-
-    def on_mouse_motion(self, x, y, dx, dy):
-        if self.x < x < self.x + self.width and  \
-           self.y < y < self.y + self.height:
-            self.enable_overlay(str(self.node))
-        else:
-            self.disable_overlay()
-
-    def enable_overlay(self, string):
-        if not self.overlay:
-            self.overlay = Overlay(self.x + self.width//2,
-                                   self.y + self.height//2,
-                                   string)
-
-    def disable_overlay(self):
-        if self.overlay:
-            self.overlay.delete()
-            self.overlay = None
-
 class NodeStatus(pyglet.sprite.Sprite):
     def __init__(self, *args, **kwargs):
         super(NodeStatus, self).__init__(img=pyglet.resource.image('status.png'),
-                                         group = Layers.middleground,
                                          *args[1:],
                                          **kwargs)
 
@@ -82,6 +60,87 @@ class Node(object):
     def __str__(self):
         return "x: {0}\ny: {1}\n".format(self.x, self.y)
 
+class SensorNode(pyglet.sprite.Sprite):
+    def __init__(self, node_info, *args, **kwargs):
+        self.node_info = node_info
+        self.node_img = pyglet.sprite.Sprite(img=pyglet.resource.image('node.png'),
+                                             group=Layers.middleground,
+                                             batch=batch)
+        #TODO: remove
+        #self.node_img.anchor_x = self.width/2
+        #self.node_img.anchor_y = self.height/2
+        self.node_status = NodeStatus(group=Layers.middleground,
+                                      batch=batch)
+        self.node_label = pyglet.text.Label(text=node_info.identifier,
+                                            anchor_x='center',
+                                            anchor_y='center',
+                                            color=(0,0,0,255),
+                                            group=Layers.middleground,
+                                            batch=batch)
+        self.overlay = None
+
+    def get_scale(self):
+        return self._scale
+    def set_scale(self, value):
+        self._scale = value
+        self.node_img.scale = value
+        self.node_status.scale = value
+    scale = property(get_scale, set_scale)
+
+    @property
+    def x(self):
+        return self.node_info.x
+
+    @property
+    def y(self):
+        return self.node_info.y
+
+    @property
+    def width(self):
+        width, height = self.compute_bounding_box()
+        return width
+
+    @property
+    def height(self):
+        width, height = self.compute_bounding_box()
+        return height
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        if self.node_img.x < x < self.node_img.x + self.width and  \
+           self.node_img.y < y < self.node_img.y + self.height:
+            self.enable_overlay(str(self.node_info))
+        else:
+            self.disable_overlay()
+
+    def enable_overlay(self, string):
+        if not self.overlay:
+            self.overlay = Overlay(self.node_img.x + self.width//2,
+                                   self.node_img.y + self.height//2,
+                                   string)
+
+    def disable_overlay(self):
+        if self.overlay:
+            self.overlay.delete()
+            self.overlay = None
+
+    def compute_bounding_box(self):
+        """return the size of the bounding box for the object"""
+        objs = [self.node_img, self.node_status, self.node_label]
+        sizes_x, sizes_y = zip(*[(obj.width, obj.height) for obj in  objs if obj])
+        return (max(sizes_x), max(sizes_y)) # TODO
+
+    def apply_tranform(self, scale, trans_x, trans_y, view_trans_x, view_trans_y):
+        self.node_img.x = scale * (self.node_info.x + trans_x) + view_trans_x
+        self.node_img.y = scale * (self.node_info.y + trans_y) + view_trans_y
+        # the node_label must be inside the node
+        self.node_label.x = scale * (self.node_info.x + trans_x) + view_trans_x + self.node_img.width // 2
+        self.node_label.y = scale * (self.node_info.y + trans_y) + view_trans_y + self.node_img.height // 2
+        # status is on the upper right corner of the image
+        self.node_status.x = scale * (self.node_info.x + trans_x) + view_trans_x + \
+                                    self.node_img.width - self.node_status.width
+        self.node_status.y = scale * (self.node_info.y + trans_y) + view_trans_y + \
+                                    self.node_img.height - self.node_status.height
+
 class SensorMap(object):
     """Display the sensor in simulation area"""
     def __init__(self):
@@ -91,28 +150,14 @@ class SensorMap(object):
         self.y_max = 0
         self.node_scale = 0.4
         self.nodes = []
-        self.nodes_img = []
-        self.nodes_status = []
-        self.nodes_label = []
         self.view_scale = 1
         self.view_trans_x = 0
         self.view_trans_y = 0
 
-    def add_node(self, node):
-        self.nodes.append(node)
-        sensor_node = SensorNode(node, group=Layers.middleground, batch=batch)
+    def add_node(self, node_info):
+        sensor_node = SensorNode(node_info)
         sensor_node.scale=self.node_scale
-        sensor_status = NodeStatus(batch=batch)
-        sensor_status.scale=self.node_scale
-        label = pyglet.text.Label(text=node.identifier,
-                                  anchor_x='center',
-                                  anchor_y='center',
-                                  color=(0,0,0,255),
-                                  group=Layers.middleground,
-                                  batch=batch)
-        self.nodes_img.append(sensor_node)
-        self.nodes_label.append(label)
-        self.nodes_status.append(sensor_status)
+        self.nodes.append(sensor_node)
         self.compute_bounding_box()
 
     def compute_bounding_box(self):
@@ -166,8 +211,7 @@ class SensorMap(object):
     def node_scale_up(self):
         self.node_scale += 0.05
         for (i, node) in enumerate(self.nodes):
-            self.nodes_img[i].scale = self.node_scale
-            self.nodes_status[i].scale = self.node_scale
+            self.nodes[i].scale = self.node_scale
 
         self.refresh_view_with_params(self.width, self.height)
 
@@ -175,8 +219,7 @@ class SensorMap(object):
         if self.node_scale > 0.05:
             self.node_scale -= 0.05
             for (i, node) in enumerate(self.nodes):
-                self.nodes_img[i].scale = self.node_scale
-                self.nodes_status[i].scale = self.node_scale
+                self.nodes[i].scale = self.node_scale
 
             self.refresh_view_with_params(self.width, self.height)
         else:
@@ -204,23 +247,14 @@ class SensorMap(object):
 
     def refresh_view_with_params(self, width, height):
         if len(self.nodes):
-            scale, trans_x, trans_y = self.compute_fit_map_to_window_params(width - self.nodes_img[0].width,
-                                                                            height - self.nodes_img[0].height)
-            self.apply_tranform(scale, trans_x, trans_y)
+            node_size_x, node_size_y = self.nodes[0].compute_bounding_box()
+            scale, trans_x, trans_y = self.compute_fit_map_to_window_params(width - node_size_x,
+                                                                            height - node_size_y)
+            self.apply_tranform(self.view_scale * scale, trans_x, trans_y)
 
     def apply_tranform(self, scale, trans_x, trans_y):
         for (i, node) in enumerate(self.nodes):
-            # the nodes image
-            self.nodes_img[i].x = self.view_scale * scale * (node.x + trans_x) + self.view_trans_x
-            self.nodes_img[i].y = self.view_scale * scale * (node.y + trans_y) + self.view_trans_y
-            # the nodes_label must be inside the node
-            self.nodes_label[i].x = self.view_scale * scale * (node.x + trans_x) + self.view_trans_x + self.nodes_img[i].width // 2
-            self.nodes_label[i].y = self.view_scale * scale * (node.y + trans_y) + self.view_trans_y + self.nodes_img[i].height // 2
-            # status is on the upper right corner of the image
-            self.nodes_status[i].x = self.view_scale * scale * (node.x + trans_x) + self.view_trans_x + \
-                                     self.nodes_img[i].width - self.nodes_status[i].width
-            self.nodes_status[i].y = self.view_scale * scale * (node.y + trans_y) + self.view_trans_y + \
-                                     self.nodes_img[i].height - self.nodes_status[i].height
+            node.apply_tranform(scale, trans_x, trans_y, self.view_trans_x, self.view_trans_y)
 
     def update(self, dt):
         pass
@@ -232,7 +266,7 @@ class SensorMap(object):
         self.refresh_view_with_params(width, height)
 
     def on_mouse_motion(self, x, y, dx, dy):
-        for node in self.nodes_img:
+        for node in self.nodes:
             node.on_mouse_motion(x, y, dx, dy)
 
 class Line(object):
