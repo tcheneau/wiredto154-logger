@@ -1,5 +1,6 @@
 """Contains the various entities that will be displayed during the simulation"""
 import pyglet
+from trig_tools import compute_arrow_points
 
 batch = None
 
@@ -181,26 +182,27 @@ class SensorMap(object):
 
         self.x_min, self.y_min, self.x_max, self.y_max = x_min, y_min, x_max, y_max
 
-    def node_change_color(self, identifier, color):
-        for node in self.nodes:
-            if node.node_info.identifier == identifier:
-                node.nodes_img.color = color
+    def node_lookup(self, identifier):
+        """returns the node corresponding to the identifier or None if no node
+        is found"""
+        node = None
+        for n in self.nodes:
+            if n.node_info.identifier == identifier:
+                node = n
                 break
+        return node
 
+    def node_change_color(self, identifier, color):
+        node = self.node_lookup(identifier)
+        if node:
+            node.nodes_img.color = color
+        else:
+            raise "node %s does not exists" % identifier
 
     def line_add(self, A, B, thickness = 4, color = BLACK):
         """draw a line between node A and node B according to their simulation identifiers"""
-        nodeA = nodeB = None
-        for node in self.nodes:
-            if nodeA and nodeB:
-                break
-
-            if node.node_info.identifier == A:
-                nodeA = node
-                continue
-            elif node.node_info.identifier == B:
-                nodeB = node
-                continue
+        nodeA = self.node_lookup(A)
+        nodeB = self.node_lookup(B)
 
         if nodeA and nodeB:
             line_id = (nodeA, nodeB) if A < B else (nodeB, nodeA)
@@ -212,8 +214,16 @@ class SensorMap(object):
             raise "%s or %s is not part of the simulation" % (A, B)
 
     def line_del(self, A, B):
-        # TODO
-        pass
+        nodeA = self.node_lookup(A)
+        nodeB = self.node_lookup(B)
+
+        if nodeA and nodeB:
+            line_id = (nodeA, nodeB) if A < B else (nodeB, nodeA)
+            if self.lines[line_id]:
+                self.lines[line_id].delete()
+                del self.lines[line_id]
+
+
 
     def arrow_add(self, source, destinaton, thickness = 2, color = BLACK):
         # TODO: return the arrow object itself, so as to create arrow groups
@@ -331,16 +341,6 @@ class Line(object):
         self.color = color
         self.vertexlist = None
 
-    def draw(self):
-        """draw a line and never updates it * DEPRECATED *"""
-        x_A, y_A = self.A
-        x_B, y_B = self.B
-
-        pyglet.gl.glLineWidth(self.thickness)
-        pyglet.graphics.draw(2,pyglet.gl.GL_LINES,
-                             ('v2f', (x_A, y_A, x_B, y_B)),
-                             ('c3B', 2 * self.color))
-
     def delete(self):
         if self.vertexlist:
             self.vertexlist.delete()
@@ -362,15 +362,57 @@ class Line(object):
         self.add_batch(batch)
 
 class DotArrow(Line):
-    """draw a line with a dot on the destination end"""
+    """draw a line with a dot on the destination end (B)"""
     def __init__(self, * args, ** kwargs):
         super(DotArrow, self).__init__(*args, **kwargs)
+        self.vertexlist = []
 
-    def draw(self):
-        pass
+    def delete(self):
+        for obj in self.vertexlist:
+            obj.delete()
+        self.vertexlist = []
 
     def add_batch(self, batch):
-        pass
+        x_A, y_A = self.A
+        x_B, y_B = self.B
+        pyglet.gl.glLineWidth(self.thickness)
+
+        C, D = compute_arrow_points(self.A, self.B, radius=12)
+        x_C, y_C = C
+        x_D, y_D = D
+
+        line = batch.add(2,pyglet.gl.GL_LINES,Layers.foreground,
+                         ('v2f', (x_B, y_B, x_A, y_A)),
+                         ('c3B', 2 * self.color))
+        arrow_left = batch.add(2,pyglet.gl.GL_LINES,Layers.foreground,
+                               ('v2f', (x_B, y_B, x_C, y_C)),
+                               ('c3B', 2 * self.color))
+
+        arrow_right = batch.add(2,pyglet.gl.GL_LINES,Layers.foreground,
+                                ('v2f', (x_B, y_B, x_D, y_D)),
+                                ('c3B', 2 * self.color))
+
+        self.vertexlist.append(line)
+        self.vertexlist.append(arrow_left)
+        self.vertexlist.append(arrow_right)
+        return self.vertexlist
+
+class ArrowGroup(object):
+    """regroup multiple arrows together"""
+
+    def __init__(self, coordinates, lifetime=1):
+        self.arrows = []
+        for X, Y in coordinates:
+            arrow = DotArrow(X, Y)
+            arrow.add_batch(batch)
+            self.arrows.append(arrow)
+
+        pyglet.clock.schedule_once(self.die, lifetime)
+
+    def die(self, dt):
+        for arrow in self.arrows:
+            arrow.delete()
+
 
 def init():
     global batch
