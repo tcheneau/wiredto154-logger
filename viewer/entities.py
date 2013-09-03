@@ -132,7 +132,7 @@ class SensorNode(pyglet.sprite.Sprite):
         """return the size of the bounding box for the object"""
         objs = [self.node_img, self.node_status, self.node_label]
         sizes_x, sizes_y = zip(*[(obj.width, obj.height) for obj in  objs if obj])
-        return (max(sizes_x), max(sizes_y)) # TODO
+        return (max(sizes_x), max(sizes_y))
 
     def apply_tranform(self, scale, trans_x, trans_y, view_trans_x, view_trans_y):
         self.node_img.x = scale * (self.node_info.x + trans_x) + view_trans_x
@@ -188,7 +188,7 @@ class SensorMap(object):
                 break
 
 
-    def draw_line(self, A, B, color = BLACK):
+    def line_add(self, A, B, thickness = 4, color = BLACK):
         """draw a line between node A and node B according to their simulation identifiers"""
         nodeA = nodeB = None
         for node in self.nodes:
@@ -205,11 +205,20 @@ class SensorMap(object):
         if nodeA and nodeB:
             line_id = (nodeA, nodeB) if A < B else (nodeB, nodeA)
             # the following call actually does not print much
-            line = Line(thickness=4, color=color)
+            line = Line(thickness=thickness, color=color)
             line.add_batch(batch)
             self.lines[line_id] = line
         else:
             raise "%s or %s is not part of the simulation" % (A, B)
+
+    def line_del(self, A, B):
+        # TODO
+        pass
+
+    def arrow_add(self, source, destinaton, thickness = 2, color = BLACK):
+        # TODO: return the arrow object itself, so as to create arrow groups
+        pass
+
 
     def reset_view(self):
         self.view_scale = 1
@@ -282,8 +291,10 @@ class SensorMap(object):
             self.apply_tranform(self.view_scale * scale, trans_x, trans_y)
 
     def apply_tranform(self, scale, trans_x, trans_y):
+        # update the nodes
         for node in self.nodes:
             node.apply_tranform(scale, trans_x, trans_y, self.view_trans_x, self.view_trans_y)
+        # update the lines
         for nodes, line in self.lines.iteritems():
             node_A, node_B = nodes
             new_A = node_A.node_info.apply_tranform(scale,
@@ -296,12 +307,7 @@ class SensorMap(object):
                                                     trans_y,
                                                     self.view_trans_x + node_B.center_x,
                                                     self.view_trans_y + node_B.center_y)
-            color = line.color
-            thickness = line.thickness
-            line.delete()
-            line = Line(new_A, new_B, thickness, color)
-            self.lines[nodes] = line
-            line.add_batch(batch)
+            line.update_coordinates(new_A, new_B)
 
     def update(self, dt):
         pass
@@ -317,6 +323,7 @@ class SensorMap(object):
             node.on_mouse_motion(x, y, dx, dy)
 
 class Line(object):
+    """draw a line"""
     def __init__(self, A=(0.,0.), B=(0.,0.), thickness=6, color=BLACK):
         self.A = A
         self.B = B
@@ -325,6 +332,7 @@ class Line(object):
         self.vertexlist = None
 
     def draw(self):
+        """draw a line and never updates it * DEPRECATED *"""
         x_A, y_A = self.A
         x_B, y_B = self.B
 
@@ -338,6 +346,7 @@ class Line(object):
             self.vertexlist.delete()
 
     def add_batch(self, batch):
+        """draw a line"""
         x_A, y_A = self.A
         x_B, y_B = self.B
         pyglet.gl.glLineWidth(self.thickness)
@@ -345,6 +354,23 @@ class Line(object):
                                    ('v2f', (x_A, y_A, x_B, y_B)),
                                    ('c3B', 2 * self.color))
         return self.vertexlist
+
+    def update_coordinates(self, A, B):
+        self.A = A
+        self.B = B
+        self.delete()
+        self.add_batch(batch)
+
+class DotArrow(Line):
+    """draw a line with a dot on the destination end"""
+    def __init__(self, * args, ** kwargs):
+        super(DotArrow, self).__init__(*args, **kwargs)
+
+    def draw(self):
+        pass
+
+    def add_batch(self, batch):
+        pass
 
 def init():
     global batch
