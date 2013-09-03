@@ -32,19 +32,22 @@ import time, os
 # - authentication status
 # - add detailed information on the Node
 
-from viewer.entities import SensorMap, Node, Line
+from viewer.entities import SensorMap, Node
 import viewer.entities
 
 # pyglet related code
 
 # common colors obtained by subtracting existing ones
+S_RED   = (50, 50, 200)
 S_GREEN = (50, 200, 50)
 S_BLUE  = (200, 50, 50)
-S_RED   = (50, 50, 200)
 
 # common colors
-BLACK = (255, 255, 255)
-BLUE  = (0,0,255)
+HARD_BLACK = (0, 0, 0, 255)
+HARD_BLUE  = (0, 0, 255, 255)
+TRANSPARENT_RED = (255, 0, 0, 125)
+TRANSPARENT_GREEN = (0, 255, 0, 125)
+TRANSPARENT_BLUE = (0, 0, 255, 125)
 
 import pyglet
 from pyglet.window import key, mouse
