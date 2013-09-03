@@ -70,9 +70,6 @@ class SensorNode(pyglet.sprite.Sprite):
         self.node_img = pyglet.sprite.Sprite(img=pyglet.resource.image('node.png'),
                                              group=Layers.middleground,
                                              batch=batch)
-        #TODO: remove
-        #self.node_img.anchor_x = self.width/2
-        #self.node_img.anchor_y = self.height/2
         self.node_status = NodeStatus(group=Layers.middleground,
                                       batch=batch)
         self.node_label = pyglet.text.Label(text=node_info.identifier,
@@ -82,6 +79,8 @@ class SensorNode(pyglet.sprite.Sprite):
                                             group=Layers.middleground,
                                             batch=batch)
         self.overlay = None
+        self.center_x = self.node_img.width/2
+        self.center_y = self.node_img.height/2
 
     def get_scale(self):
         return self._scale
@@ -89,6 +88,8 @@ class SensorNode(pyglet.sprite.Sprite):
         self._scale = value
         self.node_img.scale = value
         self.node_status.scale = value
+        self.center_x = self.node_img.width/2
+        self.center_y = self.node_img.height/2
     scale = property(get_scale, set_scale)
 
     @property
@@ -137,8 +138,8 @@ class SensorNode(pyglet.sprite.Sprite):
         self.node_img.x = scale * (self.node_info.x + trans_x) + view_trans_x
         self.node_img.y = scale * (self.node_info.y + trans_y) + view_trans_y
         # the node_label must be inside the node
-        self.node_label.x = scale * (self.node_info.x + trans_x) + view_trans_x + self.node_img.width // 2
-        self.node_label.y = scale * (self.node_info.y + trans_y) + view_trans_y + self.node_img.height // 2
+        self.node_label.x = scale * (self.node_info.x + trans_x) + view_trans_x + self.center_x
+        self.node_label.y = scale * (self.node_info.y + trans_y) + view_trans_y + self.center_y
         # status is on the upper right corner of the image
         self.node_status.x = scale * (self.node_info.x + trans_x) + view_trans_x + \
                                     self.node_img.width - self.node_status.width
@@ -204,7 +205,7 @@ class SensorMap(object):
         if nodeA and nodeB:
             line_id = (nodeA, nodeB) if A < B else (nodeB, nodeA)
             # the following call actually does not print much
-            line = Line()
+            line = Line(thickness=4, color=color)
             line.add_batch(batch)
             self.lines[line_id] = line
         else:
@@ -285,10 +286,20 @@ class SensorMap(object):
             node.apply_tranform(scale, trans_x, trans_y, self.view_trans_x, self.view_trans_y)
         for nodes, line in self.lines.iteritems():
             node_A, node_B = nodes
-            new_A = node_A.node_info.apply_tranform(scale, trans_x, trans_y, self.view_trans_x, self.view_trans_y)
-            new_B = node_B.node_info.apply_tranform(scale, trans_x, trans_y, self.view_trans_x, self.view_trans_y)
+            new_A = node_A.node_info.apply_tranform(scale,
+                                                    trans_x,
+                                                    trans_y,
+                                                    self.view_trans_x  + node_A.center_x,
+                                                    self.view_trans_y + node_A.center_y)
+            new_B = node_B.node_info.apply_tranform(scale,
+                                                    trans_x,
+                                                    trans_y,
+                                                    self.view_trans_x + node_B.center_x,
+                                                    self.view_trans_y + node_B.center_y)
+            color = line.color
+            thickness = line.thickness
             line.delete()
-            line = Line(new_A, new_B)
+            line = Line(new_A, new_B, thickness, color)
             self.lines[nodes] = line
             line.add_batch(batch)
 
