@@ -25,7 +25,7 @@ from signal import signal, SIGINT
 from sys import stdout
 from logger.network import multicast_listener
 from logger.parser import dispatcher, TextLogger
-from logger.tools import PRINT, verbose_print
+from logger.tools import PRINT, set_verbose
 import socket
 
 class prettyfile(object):
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.verbose:
-        PRINT = verbose_print
+        set_verbose(True)
 
     # set the signal to end the process gracefully
     signal(SIGINT, sig_handler)

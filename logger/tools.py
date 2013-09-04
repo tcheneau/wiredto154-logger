@@ -1,13 +1,17 @@
 """miscellaneous tools for the simulation logger"""
 
-global PRINT
-def PRINT(* args): pass
+verbose = False
 
-def verbose_print(* args):
+def PRINT(* args):
     """a more verbose print"""
-    for arg in args:
-        print arg,
-    print
+    if verbose:
+        for arg in args:
+            print arg,
+        print
+
+def set_verbose(status):
+    global verbose
+    verbose = status
 
 def simulation_end():
     print "logger is now exiting"
