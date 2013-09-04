@@ -33,22 +33,12 @@ import time, os
 # - add detailed information on the Node
 
 from viewer.entities import SensorMap, Node
+from viewer.dispatcher import Dispatcher
 import viewer.entities
 from logger.tools import set_verbose
+import logger.tools
 
 # pyglet related code
-
-# common colors obtained by subtracting existing ones
-S_RED   = (50, 50, 200)
-S_GREEN = (50, 200, 50)
-S_BLUE  = (200, 50, 50)
-
-# common colors
-HARD_BLACK = (0, 0, 0, 255)
-HARD_BLUE  = (0, 0, 255, 255)
-TRANSPARENT_RED = (255, 0, 0, 125)
-TRANSPARENT_GREEN = (0, 255, 0, 125)
-TRANSPARENT_BLUE = (0, 0, 255, 125)
 
 import pyglet
 from pyglet.window import key, mouse
@@ -124,13 +114,13 @@ def parse_xml(filename):
 
     return nodes
 
+
 if __name__ == "__main__":
     # parse arguments
     import argparse
     parser = argparse.ArgumentParser(usage= "display events coming from a wiredto154 simulation",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-f", "--filename", help="simulation file", type=str, default="simulation.xml")
-    parser.add_argument("-e", "--emu-addr", help="IP address of the PHY emulator (wiredto154)", default="127.0.0.1")
     parser.add_argument("-a", "--mcast-addr", help="IP address of the multicast group", default="224.1.1.1")
     parser.add_argument("-p", "--mcast-port", help="port to listen on (for the multicast address)", type=int, default=10000)
     parser.add_argument("-v", "--verbose", help="make this tool more verbose", action="store_true")
@@ -139,6 +129,7 @@ if __name__ == "__main__":
 
     if args.verbose:
         set_verbose(True)
+
     print "reading configuration file"
     # read XML file and prepare command line
     nodes = parse_xml(args.filename)
@@ -147,6 +138,7 @@ if __name__ == "__main__":
     viewer.entities.init()
 
     sensor_map = SensorMap()
+    graphic_dispatch = Dispatcher(args.mcast_addr, args.mcast_port, sensor_map)
     on_mouse_motion_event_obj.append(sensor_map)
     on_resize_event_obj.append(sensor_map)
     for (identifier, x, y)  in nodes:

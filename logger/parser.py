@@ -5,6 +5,7 @@ from tools import PRINT, simulation_end
 
 # protocol constants
 
+OUTBOUND_FRAME = 2 # data messages within the simulation
 LOG_HEADER = 128 # events destined to the logger
 SIM_END = 3 # server asks for the simulation to end, and thus the logger to shut down
 TYPE_ONENODE = 1
@@ -97,6 +98,35 @@ def dispatcher(data, logger):
         pass
     except:
         PRINT("could not write to the logger")
+
+def parse_packet(data):
+    # frame format:
+    # - node_id (2 bytes)
+    # - num_good_nodes (2 bytes)
+    # - good_node * num_good_nodes (n * 2 bytes)
+    # - num_bad_nodes (2 bytes)
+    # - bad_node * num_bad_nodes (n * 2 bytes)
+    # - misc.data
+    good_nodes = []
+    bad_nodes = []
+
+    node, = struct.unpack(">H", data[:2])
+
+    offset = 2
+
+    num_good_nodes, = struct.unpack(">H", data[offset:offset + 2])
+    offset += 2
+    for x in range(num_good_nodes):
+        good_nodes.append(struct.unpack(">H", data[offset:offset + 2])[0])
+        offset +=  2
+
+    num_bad_nodes, = struct.unpack(">H", data[offset:offset + 2])
+    offset += 2
+    for x in range(num_bad_nodes):
+        bad_nodes.append(struct.unpack(">H", data[offset:offset + 2])[0])
+        offset += 2
+
+    return {'node': node, 'good_nodes': good_nodes, 'bad_nodes': bad_nodes}
 
 def parse_onenode(data):
     d_format = "!BH"

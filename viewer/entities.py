@@ -11,6 +11,12 @@ HARD_BLUE  = (0, 0, 255, 255)
 TRANSPARENT_RED = (255, 0, 0, 125)
 TRANSPARENT_GREEN = (0, 255, 0, 125)
 TRANSPARENT_BLUE = (0, 0, 255, 125)
+TRANSPARENT_GREY = (50, 50, 50, 125)
+
+# common colors obtained by subtracting existing ones
+S_RED   = (200, 50, 50)
+S_GREEN = (50, 200, 50)
+S_BLUE  = (50, 50, 200)
 
 class Layers(object):
     """class that contains displayable layers"""
@@ -189,6 +195,7 @@ class SensorMap(object):
     def node_lookup(self, identifier):
         """returns the node corresponding to the identifier or None if no node
         is found"""
+        identifier = str(identifier)
         node = None
         for n in self.nodes:
             if n.node_info.identifier == identifier:
@@ -201,7 +208,14 @@ class SensorMap(object):
         if node:
             node.nodes_img.color = color
         else:
-            raise "node %s does not exists" % identifier
+            raise Exception("node %s does not exists" % identifier)
+
+    def node_status_change_color(self, identifier, color):
+        node = self.node_lookup(identifier)
+        if node:
+            node.node_status.color = color
+        else:
+            raise Exception("node %s does not exists" % identifier)
 
     def line_add(self, A, B, thickness = 4, color = HARD_BLACK):
         """draw a line between node A and node B according to their simulation identifiers"""
@@ -215,7 +229,7 @@ class SensorMap(object):
             line.add_batch(batch)
             self.lines[line_id] = line
         else:
-            raise "%s or %s is not part of the simulation" % (A, B)
+            raise Exception("%s or %s is not part of the simulation" % (A, B))
 
     def line_del(self, A, B):
         nodeA = self.node_lookup(A)
@@ -231,8 +245,13 @@ class SensorMap(object):
     def arrows_create(self, source, destinations, lifetime=.2, color = HARD_BLACK):
         coordinates = []
         A = self.node_lookup(source)
+        if not A:
+            raise Exception("arrow_create: Could not find source node %s" % source)
+
         for destination in destinations:
             B = self.node_lookup(destination)
+            if not B:
+                raise Exception("arrow_create: Could not find destination node %s" % destination)
             coordinates.append(((A.node_img.x + A.center_x, A.node_img.y + A.center_y),
                                 (B.node_img.x + B.center_x, B.node_img.y + B.center_y)))
 
