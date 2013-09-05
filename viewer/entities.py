@@ -206,7 +206,7 @@ class SensorMap(object):
     def node_change_color(self, identifier, color):
         node = self.node_lookup(identifier)
         if node:
-            node.nodes_img.color = color
+            node.node_img.color = color
         else:
             raise Exception("node %s does not exists" % identifier)
 
@@ -224,8 +224,10 @@ class SensorMap(object):
 
         if nodeA and nodeB:
             line_id = (nodeA, nodeB) if A < B else (nodeB, nodeA)
-            # the following call actually does not print much
-            line = Line(thickness=thickness, color=color)
+            if self.lines.has_key(line_id): return
+            line = Line((nodeA.node_img.x + nodeA.center_x, nodeA.node_img.y + nodeA.center_y), # A position
+                        (nodeB.node_img.x + nodeB.center_x, nodeB.node_img.y + nodeB.center_y), # B position
+                        thickness=thickness, color=color)
             line.add_batch(batch)
             self.lines[line_id] = line
         else:
@@ -237,7 +239,7 @@ class SensorMap(object):
 
         if nodeA and nodeB:
             line_id = (nodeA, nodeB) if A < B else (nodeB, nodeA)
-            if self.lines[line_id]:
+            if self.lines.has_key(line_id):
                 self.lines[line_id].delete()
                 del self.lines[line_id]
 
