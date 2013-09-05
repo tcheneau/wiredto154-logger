@@ -102,6 +102,8 @@ def on_mouse_motion(x, y, dx, dy):
     for obj in on_mouse_motion_event_obj:
         obj.on_mouse_motion(x, y, dx, dy)
 
+def update(dt):
+    pass
 
 # XML related code
 def parse_xml(filename):
@@ -147,5 +149,8 @@ if __name__ == "__main__":
 
     # set background color to white
     pyglet.gl.glClearColor(1, 1, 1, 1)
+
+    # force the main window to redraw 60 times per seconds
+    pyglet.clock.schedule_interval(update, 1/60.)
 
     pyglet.app.run()
