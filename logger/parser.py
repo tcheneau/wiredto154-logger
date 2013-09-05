@@ -18,8 +18,9 @@ class mydefaultdict(dict):
         return value
 
 # define additional types here
-onenode_subtypes_l = [(1, "node join"), (2, "node exit"), (3, "node out of sync")]
-twonode_subtypes_l = []
+onenode_subtypes_l = [(1, "node join"), (2, "node exit"), (3, "node out of sync"),
+                      (6, "AKM node state")]
+twonode_subtypes_l = [(4, "AKM link state")]
 manynode_subtypes_l = []
 
 onenode_subtypes = mydefaultdict()
