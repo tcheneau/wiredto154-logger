@@ -7,7 +7,8 @@ from logger.parser import LOG_HEADER, OUTBOUND_FRAME,\
                           parse_onenode, parse_twonodes, parse_manynodes, \
                           TYPE_ONENODE, TYPE_TWONODES, TYPE_MANYNODES
 from logger.tools import PRINT
-from entities import S_GREEN, S_RED, TRANSPARENT_GREEN, TRANSPARENT_GREY
+from entities import S_GREEN, S_RED, TRANSPARENT_GREEN, TRANSPARENT_GREY, \
+                     HARD_LIGHT_GREY, HARD_DARK_GREY, HARD_GREY
 
 class Dispatcher(object):
     def __init__(self, address, port, sensor_map):
@@ -84,6 +85,12 @@ class Dispatcher(object):
         elif subtype == 4: # AKM link authentication state
             if entry['data'] == "AUTHENTICATED":
                 self.sensor_map.line_add(entry['nodes'][0], entry['nodes'][1])
+            elif entry['data'] == "PENDING_SEND_CHALLENGE":
+                self.sensor_map.line_add(entry['nodes'][0], entry['nodes'][1], color=HARD_LIGHT_GREY)
+            elif entry['data'] == "CHALLENGE_SENT_WAITING_FOR_OK":
+                self.sensor_map.line_add(entry['nodes'][0], entry['nodes'][1], color=HARD_GREY)
+            elif entry['data'] == "OK_SENT_WAITING_FOR_ACK":
+                self.sensor_map.line_add(entry['nodes'][0], entry['nodes'][1], color=HARD_DARK_GREY)
             elif entry['data'] == "UNAUTHENTICATED":
                 self.sensor_map.line_del(entry['nodes'][0], entry['nodes'][1])
         elif subtype == 6: # AKM node authentication state

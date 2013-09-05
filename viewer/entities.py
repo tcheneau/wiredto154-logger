@@ -8,6 +8,9 @@ batch = None
 # common colors
 HARD_BLACK = (0, 0, 0, 255)
 HARD_BLUE  = (0, 0, 255, 255)
+HARD_LIGHT_GREY = (25, 25, 25, 255)
+HARD_GREY = (100, 100, 100, 255)
+HARD_DARK_GREY = (150, 150, 150, 255)
 TRANSPARENT_RED = (255, 0, 0, 125)
 TRANSPARENT_GREEN = (0, 255, 0, 125)
 TRANSPARENT_BLUE = (0, 0, 255, 125)
@@ -224,7 +227,9 @@ class SensorMap(object):
 
         if nodeA and nodeB:
             line_id = (nodeA, nodeB) if A < B else (nodeB, nodeA)
-            if self.lines.has_key(line_id): return
+            if self.lines.has_key(line_id):
+                if self.lines[line_id].color != color:
+                    self.lines[line_id].update_color(color)
             line = Line((nodeA.node_img.x + nodeA.center_x, nodeA.node_img.y + nodeA.center_y), # A position
                         (nodeB.node_img.x + nodeB.center_x, nodeB.node_img.y + nodeB.center_y), # B position
                         thickness=thickness, color=color)
@@ -388,6 +393,11 @@ class Line(object):
     def update_coordinates(self, A, B):
         self.A = A
         self.B = B
+        self.delete()
+        self.add_batch(batch)
+
+    def update_color(self, color):
+        self.color = color
         self.delete()
         self.add_batch(batch)
 
