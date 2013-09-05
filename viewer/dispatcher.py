@@ -85,11 +85,11 @@ class Dispatcher(object):
         elif subtype == 4: # AKM link authentication state
             if entry['data'] == "AUTHENTICATED":
                 self.sensor_map.line_add(entry['nodes'][0], entry['nodes'][1])
-            elif entry['data'] == "PENDING_SEND_CHALLENGE":
+            elif entry['data'] == "PENDING_SEND_CHALLENGE": # on hold for sending beacon
                 self.sensor_map.line_add(entry['nodes'][0], entry['nodes'][1], color=HARD_RED)
-            elif entry['data'] == "CHALLENGE_SENT_WAITING_FOR_OK":
+            elif entry['data'] == "CHALLENGE_SENT_WAITING_FOR_OK": # you sent a challenge, and wait for a reply
                 self.sensor_map.line_add(entry['nodes'][0], entry['nodes'][1], color=HARD_BLUE)
-            elif entry['data'] == "OK_SENT_WAITING_FOR_ACK":
+            elif entry['data'] == "OK_SENT_WAITING_FOR_ACK": # challenge went fine, waiting for the node to ACK the authentication
                 self.sensor_map.line_add(entry['nodes'][0], entry['nodes'][1], color=HARD_GREY)
             elif entry['data'] == "UNAUTHENTICATED":
                 self.sensor_map.line_del(entry['nodes'][0], entry['nodes'][1])
