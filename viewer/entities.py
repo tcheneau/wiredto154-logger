@@ -220,7 +220,7 @@ class SensorMap(object):
         else:
             raise Exception("node %s does not exists" % identifier)
 
-    def line_add(self, A, B, thickness = 4, color = HARD_BLACK):
+    def line_add(self, A, B, color = HARD_BLACK):
         """draw a line between node A and node B according to their simulation identifiers"""
         nodeA = self.node_lookup(A)
         nodeB = self.node_lookup(B)
@@ -232,7 +232,7 @@ class SensorMap(object):
                     self.lines[line_id].update_color(color)
             line = Line((nodeA.node_img.x + nodeA.center_x, nodeA.node_img.y + nodeA.center_y), # A position
                         (nodeB.node_img.x + nodeB.center_x, nodeB.node_img.y + nodeB.center_y), # B position
-                        thickness=thickness, color=color)
+                        color=color)
             line.add_batch(batch)
             self.lines[line_id] = line
         else:
@@ -369,10 +369,9 @@ class SensorMap(object):
 
 class Line(object):
     """draw a line"""
-    def __init__(self, A=(0.,0.), B=(0.,0.), thickness=6, color=HARD_BLACK):
+    def __init__(self, A=(0.,0.), B=(0.,0.), color=HARD_BLACK):
         self.A = A
         self.B = B
-        self.thickness = thickness
         self.color = color
         self.vertexlist = None
 
@@ -384,7 +383,6 @@ class Line(object):
         """draw a line"""
         x_A, y_A = self.A
         x_B, y_B = self.B
-        pyglet.gl.glLineWidth(self.thickness)
         self.vertexlist = batch.add(2,pyglet.gl.GL_LINES,Layers.background,
                                    ('v2f', (x_A, y_A, x_B, y_B)),
                                    ('c4B', 2 * self.color))
@@ -415,7 +413,6 @@ class Arrow(Line):
     def add_batch(self, batch):
         x_A, y_A = self.A
         x_B, y_B = self.B
-        pyglet.gl.glLineWidth(self.thickness)
 
         C, D = compute_arrow_points(self.A, self.B, radius=14)
         x_C, y_C = C
@@ -456,6 +453,7 @@ def init():
     global batch
     batch = pyglet.graphics.Batch()
 
+    pyglet.gl.glLineWidth(6)
     #enable alpha blending
     glEnable(GL_BLEND)
     glShadeModel(GL_SMOOTH)
