@@ -7,6 +7,8 @@ batch = None
 
 # common colors
 HARD_BLACK = (0, 0, 0, 255)
+HARD_RED  = (255, 0, 0, 255)
+HARD_GREEN  = (0, 255, 0, 255)
 HARD_BLUE  = (0, 0, 255, 255)
 HARD_LIGHT_GREY = (25, 25, 25, 255)
 HARD_GREY = (100, 100, 100, 255)
