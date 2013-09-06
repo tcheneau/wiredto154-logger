@@ -8,6 +8,7 @@ from logger.parser import LOG_HEADER, OUTBOUND_FRAME,\
                           TYPE_ONENODE, TYPE_TWONODES, TYPE_MANYNODES
 from logger.tools import PRINT
 from entities import S_GREEN, S_BLUE, S_RED, TRANSPARENT_GREEN, TRANSPARENT_GREY, \
+from entities import S_GREEN, S_LIGHT_BLUE, S_RED, TRANSPARENT_GREEN, TRANSPARENT_GREY, \
                      HARD_GREY, HARD_RED, HARD_BLUE
 
 class Dispatcher(object):
@@ -97,7 +98,7 @@ class Dispatcher(object):
             if entry['data'] == "AUTHENTICATED_SATURATED":
                 self.sensor_map.node_change_color(entry['nodes'][0], S_GREEN)
             elif entry['data'] == "AUTHENTICATED_UNSATURATED":
-                self.sensor_map.node_change_color(entry['nodes'][0], S_BLUE)
+                self.sensor_map.node_change_color(entry['nodes'][0], S_LIGHT_BLUE)
             elif entry['data'] == "UNAUTHENTICATED":
                 self.sensor_map.node_change_color(entry['nodes'][0], S_RED)
 

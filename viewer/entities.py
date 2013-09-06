@@ -10,6 +10,7 @@ HARD_BLACK = (0, 0, 0, 255)
 HARD_RED  = (255, 0, 0, 255)
 HARD_GREEN  = (0, 255, 0, 255)
 HARD_BLUE  = (0, 0, 255, 255)
+HARD_LIGHT_BLUE  = (0, 0, 50, 255)
 HARD_LIGHT_GREY = (25, 25, 25, 255)
 HARD_GREY = (100, 100, 100, 255)
 HARD_DARK_GREY = (150, 150, 150, 255)
@@ -22,6 +23,7 @@ TRANSPARENT_GREY = (50, 50, 50, 125)
 S_RED   = (200, 50, 50)
 S_GREEN = (50, 200, 50)
 S_BLUE  = (50, 50, 200)
+S_LIGHT_BLUE  = (120, 120, 255)
 
 class Layers(object):
     """class that contains displayable layers"""
