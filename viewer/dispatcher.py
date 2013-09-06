@@ -7,8 +7,9 @@ from logger.parser import LOG_HEADER, OUTBOUND_FRAME,\
                           parse_onenode, parse_twonodes, parse_manynodes, \
                           TYPE_ONENODE, TYPE_TWONODES, TYPE_MANYNODES
 from logger.tools import PRINT
-from entities import S_GREEN, S_BLUE, S_RED, TRANSPARENT_GREEN, TRANSPARENT_GREY, \
-from entities import S_GREEN, S_LIGHT_BLUE, S_RED, TRANSPARENT_GREEN, TRANSPARENT_GREY, \
+from logger.framer import IEEE802154Framer
+from entities import S_GREEN, S_LIGHT_BLUE, S_RED, \
+                     TRANSPARENT_RED, TRANSPARENT_GREEN, TRANSPARENT_GREY, \
                      HARD_GREY, HARD_RED, HARD_BLUE
 
 class Dispatcher(object):
@@ -69,9 +70,15 @@ class Dispatcher(object):
         node = packet_info['node']
         good_nodes = packet_info['good_nodes']
         bad_nodes = packet_info['bad_nodes']
+        offset = IEEE802154Framer(packet_info['data']).compute_mac_payload_offset()
+        payload_type = ord(packet_info['data'][offset])
+        if payload_type == 0x47: # AKM
+            good_color = TRANSPARENT_RED
+        else:
+            good_color = TRANSPARENT_GREEN
         if good_nodes or bad_nodes:
             # good nodes in green
-            self.sensor_map.arrows_create(node, good_nodes, lifetime = 0.4, color = TRANSPARENT_GREEN)
+            self.sensor_map.arrows_create(node, good_nodes, lifetime = 0.4, color = good_color)
             # bad nodes in grey
             self.sensor_map.arrows_create(node, bad_nodes, lifetime = 0.4, color = TRANSPARENT_GREY)
 

@@ -127,7 +127,11 @@ def parse_packet(data):
         bad_nodes.append(struct.unpack(">H", data[offset:offset + 2])[0])
         offset += 2
 
-    return {'node': node, 'good_nodes': good_nodes, 'bad_nodes': bad_nodes}
+    return {'node': node,
+            'good_nodes': good_nodes,
+            'bad_nodes': bad_nodes,
+            'timestamp': data[offset:offset+8],
+            'data': data[offset+8:]}
 
 def parse_onenode(data):
     d_format = "!BH"
