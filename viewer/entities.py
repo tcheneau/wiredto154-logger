@@ -232,6 +232,7 @@ class SensorMap(object):
             if self.lines.has_key(line_id):
                 if self.lines[line_id].color != color:
                     self.lines[line_id].update_color(color)
+                return
             line = Line((nodeA.node_img.x + nodeA.center_x, nodeA.node_img.y + nodeA.center_y), # A position
                         (nodeB.node_img.x + nodeB.center_x, nodeB.node_img.y + nodeB.center_y), # B position
                         color=color)
