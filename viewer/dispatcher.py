@@ -7,7 +7,7 @@ from logger.parser import LOG_HEADER, OUTBOUND_FRAME,\
                           parse_onenode, parse_twonodes, parse_manynodes, \
                           TYPE_ONENODE, TYPE_TWONODES, TYPE_MANYNODES
 from logger.tools import PRINT
-from entities import S_GREEN, S_RED, TRANSPARENT_GREEN, TRANSPARENT_GREY, \
+from entities import S_GREEN, S_BLUE, S_RED, TRANSPARENT_GREEN, TRANSPARENT_GREY, \
                      HARD_GREY, HARD_RED, HARD_BLUE
 
 class Dispatcher(object):
@@ -94,8 +94,10 @@ class Dispatcher(object):
             elif entry['data'] == "UNAUTHENTICATED":
                 self.sensor_map.line_del(entry['nodes'][0], entry['nodes'][1])
         elif subtype == 6: # AKM node authentication state
-            if entry['data'] == "AUTHENTICATED":
+            if entry['data'] == "AUTHENTICATED_SATURATED":
                 self.sensor_map.node_change_color(entry['nodes'][0], S_GREEN)
+            elif entry['data'] == "AUTHENTICATED_UNSATURATED":
+                self.sensor_map.node_change_color(entry['nodes'][0], S_BLUE)
             elif entry['data'] == "UNAUTHENTICATED":
                 self.sensor_map.node_change_color(entry['nodes'][0], S_RED)
 
