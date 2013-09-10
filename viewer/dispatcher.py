@@ -101,6 +101,9 @@ class Dispatcher(object):
                 self.sensor_map.line_add(entry['nodes'][0], entry['nodes'][1], color=HARD_GREY)
             elif entry['data'] == "UNAUTHENTICATED":
                 self.sensor_map.line_del(entry['nodes'][0], entry['nodes'][1])
+        elif subtype == 5: # RPL
+            if entry['data'] == "RPL":
+                self.sensor_map.node_lookup(entry['nodes'][0]).node_info.parents = entry['nodes'][1:]
         elif subtype == 6: # AKM node authentication state
             if entry['data'] == "AUTHENTICATED_SATURATED":
                 self.sensor_map.node_change_color(entry['nodes'][0], S_GREEN)

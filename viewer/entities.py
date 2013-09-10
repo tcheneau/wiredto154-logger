@@ -76,7 +76,16 @@ class Node(object):
         self.y = y
 
     def __str__(self):
-        return "x: {0}\ny: {1}\n".format(self.x, self.y)
+        string = "x: {0}\ny: {1}\n".format(self.x, self.y)
+        try:
+            if self.parents:
+                string += "parents:" + ", ".join([str(parent) for parent in self.parents])  + "\n"
+            else:
+                string += "parents: none\n"
+
+        except AttributeError:
+            pass
+        return string
 
     def apply_tranform(self, scale, trans_x, trans_y, view_trans_x, view_trans_y):
         return (scale * (self.x + trans_x) + view_trans_x,
