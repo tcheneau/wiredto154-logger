@@ -82,7 +82,6 @@ class Node(object):
                 string += "parents:" + ", ".join([str(parent) for parent in self.parents])  + "\n"
             else:
                 string += "parents: none\n"
-
         except AttributeError:
             pass
         return string

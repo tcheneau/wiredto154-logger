@@ -1,7 +1,9 @@
 Logging tool for wiredto154 simulations
 =======================================
 
-This document describes a logger tool works alongside *[wiredto154][]* simulation.
+This document describes a logger tool works alongside *[wiredto154][]*
+simulation. In addition, we provide a real-time simulation viewer that animates
+simulation events.
 
 This tool was written to parse logging message of one of our research item
 (the Adaptive Keying Management protocol) and probably needs to be adapted to
@@ -132,9 +134,10 @@ A node (node A) report an event that occurred between him and a group of nodes.
 * \# *of nodes* represents the number of nodes. The value of this field must be at least 1.
 * *Node A ID* represents the Node Identifier of the node who reported the event.
 
+Logger
+------
 
-Usage
------
+### Usage
 
     usage: Log events coming from a wiredto154 simulation
     
@@ -147,8 +150,7 @@ Usage
       -p PORT, --port PORT  port to listen on (default: 10000)
       -v, --verbose         make this tool more verbose (default: False)
 
-Example of use
---------------
+### Example of use
 
 If the simulation sends its event on the default multicast address and default port
 and you want to see the output of the logger on the standard output (stdout),
@@ -162,6 +164,33 @@ want the output to be stored in a file named "log.txt":
     ./logger.py -a 224.2.2.2 -p 5000 -f log.txt
 
 The logger.py will exit gracefully upon receiving the interrupt signal (Ctrl+C).
+
+Simulation viewer
+-----------------
+
+The simulation viewer depends on [http://www.pyglet.org/](pyglet). In a lot of
+cases, you can install this library using *pip* or *easy_install* if it is not
+packaged for your system (e.g. *pip install pyglet*).
+
+### Usage
+
+    usage: display events coming from a wiredto154 simulation
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      -f FILENAME, --filename FILENAME
+                            simulation file (default: simulation.xml)
+      -a MCAST_ADDR, --mcast-addr MCAST_ADDR
+                            IP address of the multicast group (default: 224.1.1.1)
+      -p MCAST_PORT, --mcast-port MCAST_PORT
+                            port to listen on (for the multicast address)
+                            (default: 10000)
+      -v, --verbose         make this tool more verbose (default: False)
+
+
+### Example of use
+
+TBD
 
 Calling the logging API from Contiki
 ------------------------------------
